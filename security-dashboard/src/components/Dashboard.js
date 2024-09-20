@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import Navbar from './Navbar';
 import Modal from './Modal'; // Modal updated with "View Graph" button
 import './Dashboard.css'; // Custom styling for the dashboard
 
@@ -28,6 +30,8 @@ const Dashboard = ({ setAuth }) => {
   const [order, setOrder] = useState('asc'); // Sorting order
   const [orderBy, setOrderBy] = useState('id'); // Field to sort by
   const username = localStorage.getItem('username');
+  const navigate = useNavigate();  // Initialize useNavigate hook
+
 
   useEffect(() => {
     fetchAlerts();
@@ -118,11 +122,10 @@ const Dashboard = ({ setAuth }) => {
 
   return (
     <div className="dashboard">
-      <div className="top-bar">
-        <h1>Dashboard</h1>
-        <Button onClick={() => setAuth(false)}>Sign Out</Button>
-      </div>
+    
+    <Navbar setAuth={setAuth} />
 
+      
       {/* Search Field */}
       <div className="table-controls">
         <TextField
