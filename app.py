@@ -8,10 +8,16 @@ from datetime import datetime
 import sqlite3
 import sqlalchemy.exc
 import os
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
 
 app = Flask(__name__)
 
 CORS(app)
+
+GOOGLE_CLIENT_ID = '466366934274-fbpsj2kni5qkmcn4jgrjukmupnbtbn9o.apps.googleusercontent.com'
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.getcwd(), 'users.db')}"
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -35,7 +41,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     name = db.Column(db.String(80), unique=False, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(120))
     email = db.Column(db.String(120), unique=True, nullable=False)
     picture = db.Column(db.String(100))
 
@@ -170,6 +176,46 @@ def login():
     response = jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
     
     return response 
+
+@app.route('/api/google-login', methods=['POST'])
+def google_login():
+    if request.is_json:
+        data = request.get_json()
+        token = data.get('token')
+        
+        try:
+            # Verify the Google token
+            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+            
+            # Check if the user exists
+            user = User.query.filter_by(email=idinfo['email']).first()
+            
+          
+            if not user:
+                # Create a new user if not exists
+                user = User(
+                    username=idinfo['email'],
+                    name=idinfo['name'],
+                    email=idinfo['email'],
+                    picture=idinfo.get('picture')
+                )
+                db.session.add(user)
+                db.session.commit()
+            
+            response = jsonify({'success': True, 'username': user.username})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
+        
+        except ValueError:
+            # Invalid token
+            response = jsonify({'success': False, 'error': 'Invalid Google token'}), 401
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response
+
+    response = jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+ 
 
 @app.route('/api/create-user', methods=['POST'])
 def create_user():

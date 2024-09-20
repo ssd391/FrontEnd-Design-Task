@@ -1,4 +1,4 @@
-.create-user-page {
+/* .create-user-page {
   padding: 2.5rem;
 }
 
@@ -33,4 +33,120 @@ input {
 
 .error {
   color: red;
+} */
+
+/* General Page Layout */
+.create-user-page {
+  padding: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f6f8; /* Light gray background */
+}
+
+/* Container for form card */
+.create-user-container {
+  background-color: white; /* White background for the form card */
+  padding: 3rem;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for the container */
+  border-radius: 8px; /* Rounded corners for the container */
+  width: 400px; /* Controlled width for consistent form sizing */
+  text-align: center; /* Center-align text and elements */
+}
+
+/* Title styling */
+.title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333333; /* Darker gray for title */
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Form styling */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+input {
+  width: 100%;
+  margin-bottom: 1.2rem;
+  padding: 0.75rem;
+  border: 1px solid #dcdfe3; /* Light border for inputs */
+  border-radius: 0.5rem; /* Softer rounding for inputs */
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333333; /* Darker text color */
+  background-color: #f4f6f8; /* Light background color for inputs */
+  transition: border-color 0.3s ease; /* Smooth transition on focus */
+}
+
+/* Input focus styling */
+input:focus {
+  outline: none;
+  border-color: #0072c6; /* Workday's signature blue for input focus */
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(0, 114, 198, 0.1); /* Subtle shadow effect */
+}
+
+/* Button styling */
+.create-button {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: #0072c6; /* Workday's blue */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+.create-button:hover {
+  background-color: #005fa3; /* Darker blue on hover */
+}
+
+/* Error message styling */
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+password-requirements {
+  background-color: #f5f5f5;
+  list-style-type: disc;
+  color: #000; /* Black text color */
+  font-size: 0.2rem;
+}
+
+.password-requirements {
+  margin-top: 1rem;
+  margin-bottom: 3rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  background-color: #f5f5f5;
+  font-size: 0.875rem; /* Smaller font size */
+  color: #000; /* Black text color */
+}
+
+.password-requirements h2 {
+  font-size: 1rem;
+  color: #0072c6; /* Workday's blue */
+  margin-bottom: 0.5rem;
+}
+
+.password-requirements ul {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.password-requirements li {
+  margin-bottom: 0.5rem;
 }

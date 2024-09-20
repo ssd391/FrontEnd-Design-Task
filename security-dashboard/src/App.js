@@ -8,8 +8,12 @@ import NetworkPage from './components/NetworkPage';
 import LoginPage from './components/LoginPage';
 import CreateUserPage from './components/CreateUserPage';
 import Profile from './components/Profile'
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
+
+
+const GOOGLE_CLIENT_ID = '466366934274-fbpsj2kni5qkmcn4jgrjukmupnbtbn9o.apps.googleusercontent.com';
 
 
 const App = () => {
@@ -34,6 +38,7 @@ const App = () => {
   }, []);
 
   return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <Router>
       <Routes>
         <Route path="/login" element={auth ? <Navigate to="/" /> : <LoginPage setAuth={setAuth} />} />
@@ -46,6 +51,7 @@ const App = () => {
         <Route path="/" element={auth ? <Dashboard setAuth={setAuth}/> : <Navigate to="/login" />} />
       </Routes>
     </Router>
+    </GoogleOAuthProvider>
   );
 };
 
