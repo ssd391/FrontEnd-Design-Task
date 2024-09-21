@@ -22,6 +22,9 @@ const Modal = ({ show, onClose, alert }) => {
         <p><strong>Description:</strong> {alert.description}</p>
         <p><strong>Severity:</strong> {alert.severity}</p>
         <p><strong>Machine:</strong> {alert.machine}</p>
+        <p><strong>Occured On:</strong> {alert.occured_on}</p>
+        <p><strong>Program:</strong> {alert.program}</p>
+
       </DialogContent>
       <DialogActions>
         {/* Close Button */}

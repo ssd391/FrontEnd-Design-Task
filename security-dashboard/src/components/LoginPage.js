@@ -115,10 +115,10 @@ const LoginPage = ({ setAuth }) => {
 
         <div className="google-login">
           <h2>Or Sign In with Google</h2>
-          <GoogleLogin
+          {/* <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onFailure={handleGoogleFailure}
-          />
+          /> */}
         </div>
       </div>
     </div>
