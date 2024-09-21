@@ -16,7 +16,7 @@
 
 /* Toggle button styling */
 .toggle-button {
-/*  position: absolute;*/
+  position: absolute;
   top: 10px;
   left: 10px;
   background-color: #007bff;
@@ -46,37 +46,6 @@
   position: relative;
 }
 
-/* Custom Scrollbar Styles */
-.scrollable-popup {
-  max-height: 150px;
-  overflow-y: auto;
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: transparent; /* Firefox */
-}
-
-.scrollable-popup::-webkit-scrollbar {
-  width: 8px; /* WebKit */
-}
-
-.scrollable-popup::-webkit-scrollbar-track {
-  background: transparent; /* WebKit */
-}
-
-.scrollable-popup::-webkit-scrollbar-thumb {
-  background: grey; /* WebKit */
-  border-radius: 8px;
-}
-
-.scrollable-popup::-webkit-scrollbar-thumb:hover {
-  background: darkgrey; /* WebKit */
-}
-
-/* Popup edge and node styling */
-.popup-edge {
-  border: 2px solid #ff0000;
-  color: #333;
-}
-
 .popup-node {
   border: 2px solid #007bff;
   color: #007bff;
@@ -95,29 +64,3 @@
 .close-button:hover {
   color: red;
 }
-
-.network-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.node-details {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  width: 300px;
-  text-align: left;
-}
-
-.node-details h3 {
-  margin-top: 0;
-}
-
-.node-details p {
-  margin: 5px 0;
-}
-

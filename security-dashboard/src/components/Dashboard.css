@@ -1,3 +1,4 @@
+/* Dashboard.css */
 .dashboard {
   padding: 20px;
   background-color: #f5f5f5;
@@ -5,15 +6,25 @@
 
 h1 {
   margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 2rem;
+  color: #333;
 }
 
 button {
   margin-left: 10px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.dashboard {
-  padding: 20px;
-  background-color: #f5f5f5;
+button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
 }
 
 .top-bar {
@@ -29,16 +40,36 @@ button {
   margin-bottom: 20px;
 }
 
-button {
-  padding: 8px 12px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  border-radius: 5px;
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-button:hover {
-  background-color: #0056b3;
+.card-content {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.1rem;
+  color: #555;
 }
 
+.table-row:hover {
+  background-color: #f1f1f1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dashboard {
+    background-color: #333;
+    color: white;
+  }
+
+  button {
+    background-color: #0056b3;
+  }
+
+  button:hover {
+    background-color: #007bff;
+  }
+
+  .table-row:hover {
+    background-color: #444;
+  }
+}

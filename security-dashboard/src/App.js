@@ -38,7 +38,7 @@ const App = () => {
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    // <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <Router>
       <Routes>
         <Route path="/login" element={auth ? <Navigate to="/" /> : <LoginPage setAuth={setAuth} />} />
@@ -51,7 +51,7 @@ const App = () => {
         <Route path="/" element={auth ? <Dashboard setAuth={setAuth}/> : <Navigate to="/login" />} />
       </Routes>
     </Router>
-    </GoogleOAuthProvider>
+    // </GoogleOAuthProvider>
   );
 };
 

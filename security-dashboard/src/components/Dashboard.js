@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TablePagination,
-  TextField,
-  Button,
-  TableSortLabel,
-} from '@mui/material';
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  TablePagination, TextField, Button, TableSortLabel, Grid, Typography, Card,
+  CardContent, Tooltip, IconButton
+} from '@mui/material'; // Updated Grid and other components from MUI v5
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import Navbar from './Navbar';
-import Modal from './Modal'; // Modal updated with "View Graph" button
-import './Dashboard.css'; // Custom styling for the dashboard
+import Modal from './Modal';
+import './Dashboard.css';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SearchIcon from '@mui/icons-material/Search';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 
 const Dashboard = ({ setAuth }) => {
   const [alerts, setAlerts] = useState([]);
@@ -27,11 +23,10 @@ const Dashboard = ({ setAuth }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [order, setOrder] = useState('asc'); // Sorting order
-  const [orderBy, setOrderBy] = useState('id'); // Field to sort by
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('id');
   const username = localStorage.getItem('username');
-  const navigate = useNavigate();  // Initialize useNavigate hook
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAlerts();
@@ -39,28 +34,28 @@ const Dashboard = ({ setAuth }) => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/alert'); // Replace with your backend endpoint
+      const response = await fetch('http://127.0.0.1:5000/api/alert');
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
       const data = await response.json();
       setAlerts(data.alerts || []);
       setFilteredAlerts(data.alerts || []);
     } catch (error) {
       console.error('Error fetching alerts:', error);
+      alert('Failed to fetch alerts. Please check the API.');
     }
   };
 
-  // Search functionality
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
     const filteredData = alerts.filter((alert) =>
-      Object.values(alert).some((val) =>
-        String(val).toLowerCase().includes(value)
-      )
+      Object.values(alert).some((val) => String(val).toLowerCase().includes(value))
     );
     setFilteredAlerts(filteredData);
   };
 
-  // Sorting functionality
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -69,15 +64,20 @@ const Dashboard = ({ setAuth }) => {
 
   const sortData = (data, order, orderBy) => {
     return data.sort((a, b) => {
-      if (order === 'asc') {
-        return a[orderBy] < b[orderBy] ? -1 : 1;
-      } else {
-        return a[orderBy] > b[orderBy] ? -1 : 1;
+      if (a[orderBy] < b[orderBy]) {
+        return order === 'asc' ? -1 : 1;
       }
+      if (a[orderBy] > b[orderBy]) {
+        return order === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   };
 
-  const sortedAlerts = sortData([...filteredAlerts], order, orderBy); // Spread operator to avoid mutating the state directly
+  const sortedAlerts = React.useMemo(
+    () => sortData([...filteredAlerts], order, orderBy),
+    [filteredAlerts, order, orderBy]
+  );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -110,127 +110,141 @@ const Dashboard = ({ setAuth }) => {
   const getRowStyle = (severity) => {
     switch (severity.toLowerCase()) {
       case 'high':
-        return { backgroundColor: '#f8d7da' }; // Light Red for High severity
+        return { backgroundColor: '#f8d7da' };
       case 'medium':
-        return { backgroundColor: '#fff3cd' }; // Light Yellow for Medium severity
+        return { backgroundColor: '#fff3cd' };
       case 'low':
-        return { backgroundColor: '#d4edda' }; // Light Green for Low severity
+        return { backgroundColor: '#d4edda' };
       default:
         return {};
     }
   };
 
+  const getAlertStats = () => {
+    const stats = { high: 0, medium: 0, low: 0 };
+
+    if (alerts && alerts.length) {
+      alerts.forEach((alert) => {
+        const severity = alert.severity.toLowerCase();
+        if (stats[severity] !== undefined) {
+          stats[severity]++;
+        }
+      });
+    }
+
+    return [
+      { name: 'High', value: 10 },
+      { name: 'Medium', value: 5},
+      { name: 'Low', value: 6 },
+    ];
+  };
+
   return (
     <div className="dashboard">
-    
-    <Navbar setAuth={setAuth} />
-
-      
-      {/* Search Field */}
-      <div className="table-controls">
-        <TextField
-          label="Search Alerts"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearch}
-          style={{ marginBottom: '20px', width: '300px' }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={exportToExcel}
-          style={{ marginLeft: '20px' }}
-        >
-          Export to Excel
-        </Button>
-      </div>
-
-      {/* Alerts Table */}
-      <TableContainer component={Paper} style={{ maxHeight: '400px', overflow: 'auto' }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow >
-              {/* Table Headers with Sorting */}
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'id'}
-                  direction={orderBy === 'id' ? order : 'asc'}
-                  onClick={() => handleRequestSort('id')}
-                >
-                  ID
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'name'}
-                  direction={orderBy === 'name' ? order : 'asc'}
-                  onClick={() => handleRequestSort('name')}
-                >
-                  Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'description'}
-                  direction={orderBy === 'description' ? order : 'asc'}
-                  onClick={() => handleRequestSort('description')}
-                >
-                  Description
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'severity'}
-                  direction={orderBy === 'severity' ? order : 'asc'}
-                  onClick={() => handleRequestSort('severity')}
-                >
-                  Severity
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'machine'}
-                  direction={orderBy === 'machine' ? order : 'asc'}
-                  onClick={() => handleRequestSort('machine')}
-                >
-                  Machine
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedAlerts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((alert) => (
-              <TableRow key={alert.id} style={getRowStyle(alert.severity)}>
-                <TableCell>{alert.id}</TableCell>
-                <TableCell>{alert.name}</TableCell>
-                <TableCell>{alert.description}</TableCell>
-                <TableCell>{alert.severity}</TableCell>
-                <TableCell>{alert.machine}</TableCell>
-                <TableCell>
-                  <Button variant="contained" onClick={() => openModal(alert)}>
-                    More Info
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={sortedAlerts.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </TableContainer>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <Modal show={isModalOpen} onClose={closeModal} alert={selectedAlert} />
-      )}
+      <Navbar setAuth={setAuth} />
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h4" component="h1">Welcome, {username}</Typography>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card className="card">
+            <CardContent className="card-content">
+              <Typography variant="h6">Alert Statistics</Typography>
+              {/* <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={getAlertStats()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer> */}
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card className="card">
+            <CardContent className="card-content">
+              <Typography variant="h6">Quick Actions</Typography>
+              <Tooltip title="Export to Excel">
+                <IconButton color="primary" onClick={exportToExcel}>
+                  <FileDownloadOutlinedIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Refresh Data">
+                <IconButton onClick={fetchAlerts}>
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12}>
+          <Paper>
+            <div className="table-controls">
+              <TextField
+                label="Search Alerts"
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearch}
+                InputProps={{
+                  endAdornment: <SearchIcon />
+                }}
+              />
+            </div>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {['id', 'name', 'severity', 'machine'].map((column) => (
+                      <TableCell key={column}>
+                        <TableSortLabel
+                          active={orderBy === column}
+                          direction={orderBy === column ? order : 'asc'}
+                          onClick={() => handleRequestSort(column)}
+                        >
+                          {column.charAt(0).toUpperCase() + column.slice(1)}
+                        </TableSortLabel>
+                      </TableCell>
+                    ))}
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sortedAlerts
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((alert) => (
+                      <TableRow key={alert.id} style={getRowStyle(alert.severity)} className="table-row">
+                        <TableCell>{alert.id}</TableCell>
+                        <TableCell>{alert.name}</TableCell>
+                        <TableCell>{alert.severity}</TableCell>
+                        <TableCell>{alert.machine}</TableCell>
+                        <TableCell>
+                          <Button variant="outlined" onClick={() => openModal(alert)}>
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredAlerts.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              showFirstButton
+              showLastButton
+            />
+          </Paper>
+        </Grid>
+      </Grid>
+      <Modal show={isModalOpen} onClose={closeModal} alert={selectedAlert} />
     </div>
   );
 };

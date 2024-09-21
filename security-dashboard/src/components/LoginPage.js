@@ -138,36 +138,36 @@ const LoginPage = ({ setAuth }) => {
   };
 
   // Google Sign-In success handler
-  const handleGoogleSuccess = (response) => {
-    const token = response.credential;
+  // const handleGoogleSuccess = (response) => {
+  //   const token = response.credential;
 
-    // Send token to the backend for validation
-    fetch('http://127.0.0.1:5000/api/google-login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setAuth(true);
-          console.log(data);
-          localStorage.setItem('username', data.username);
-          localStorage.setItem('auth', 'true');
-          navigate('/');
-        } else {
-          setError('Google Sign-In failed.');
-        }
-      });
-  };
+  //   // Send token to the backend for validation
+  //   fetch('http://127.0.0.1:5000/api/google-login', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ token }),
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       if (data.success) {
+  //         setAuth(true);
+  //         console.log(data);
+  //         localStorage.setItem('username', data.username);
+  //         localStorage.setItem('auth', 'true');
+  //         navigate('/');
+  //       } else {
+  //         setError('Google Sign-In failed.');
+  //       }
+  //     });
+  // };
 
-  // Google Sign-In failure handler
-  const handleGoogleFailure = (error) => {
-    console.error('Google Sign-In Error:', error);
-    setError('Google Sign-In failed.');
-  };
+  // // Google Sign-In failure handler
+  // const handleGoogleFailure = (error) => {
+  //   console.error('Google Sign-In Error:', error);
+  //   setError('Google Sign-In failed.');
+  // };
 
   return (
     <div className="login-page">
@@ -194,13 +194,7 @@ const LoginPage = ({ setAuth }) => {
 
         <p className="small-text">Don't have an account? <a href="/create-user">Create one</a></p>
 
-        <div className="google-login">
-          <h2>Or Sign In with Google</h2>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onFailure={handleGoogleFailure}
-          />
-        </div>
+     
       </div>
     </div>
   );
