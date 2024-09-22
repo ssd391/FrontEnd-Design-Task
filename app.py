@@ -242,8 +242,8 @@ def get_alerts():
     global uploadCount
     try:
         if uploadCount > 1:
-            alerts = Alert.query.with_entities(Alert.id, Alert.name, Alert.description, Alert.severity, Alert.machine).all()
-            alert_list = [{'id': alert.id, 'name': alert.name, 'description': alert.description, 'severity': alert.severity, 'machine': alert.machine} for alert in alerts]
+            alerts = Alert.query.with_entities(Alert.id, Alert.name, Alert.description, Alert.severity, Alert.machine, Alert.occurred_on, Alert.program).all()
+            alert_list = [{'id': alert.id, 'name': alert.name, 'description': alert.description, 'severity': alert.severity, 'machine': alert.machine, 'occured_on': alert.occurred_on, 'program': alert.program} for alert in alerts]
         else:
             alert_list = []
 
@@ -253,6 +253,51 @@ def get_alerts():
         response = jsonify({'error': str(e)}), 400
 
         return response  
+
+# @app.route('/api/alert', methods=['GET'])
+# def get_alerts():
+#     global uploadCount
+#     try:
+#         # Get pagination parameters from request, with default values
+#         page = request.args.get('page', 1, type=int)  # Default page is 1
+#         limit = request.args.get('limit', 10, type=int)  # Default limit is 10 items per page
+
+#         if uploadCount > 1:
+#             # Calculate offset
+#             offset = (page - 1) * limit
+
+#             # Query total count of alerts for pagination purposes
+#             total_alerts = Alert.query.count()
+
+#             # Fetch only the limited number of alerts with pagination
+#             alerts = Alert.query.with_entities(
+#                 Alert.id, Alert.name, Alert.description, Alert.severity, Alert.machine, Alert.occurred_on, Alert.program
+#             ).order_by(Alert.severity.desc())  # Sorting alerts by severity
+
+#             # Apply limit and offset for pagination
+#             alerts = alerts.limit(limit).offset(offset).all()
+
+#             # Convert the alerts to a list of dictionaries
+#             alert_list = [{
+#                 'id': alert.id,
+#                 'name': alert.name,
+#                 'description': alert.description,
+#                 'severity': alert.severity,
+#                 'machine': alert.machine,
+#                 'occurred_on': alert.occurred_on,
+#                 'program': alert.program
+#             } for alert in alerts]
+#         else:
+#             alert_list = []
+#             total_alerts = 0
+
+#         # Return alerts along with total count for pagination
+#         response = jsonify({'alerts': alert_list}), 200
+#         return response 
+#     except SQLAlchemyError as e:
+#         response = jsonify({'error': str(e)}), 400
+#         return response
+
 
 @app.route('/alert/<int:alert_id>', methods=['GET'])
 def get_alert(alert_id):

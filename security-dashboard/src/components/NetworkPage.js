@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Graph from 'react-vis-network-graph';
 import { Rnd } from 'react-rnd';
+import { Card, CardContent, Typography, Button } from '@mui/material';
 import './NetworkPage.css';
-import uuid from "react-uuid";
+import uuid from 'react-uuid';
 
 const NetworkPage = () => {
   const { alertId } = useParams();
@@ -13,16 +14,19 @@ const NetworkPage = () => {
   const [loading, setLoading] = useState(true);
   const [clickedNode, setClickedNode] = useState(null);
   const [showTransparent, setShowTransparent] = useState(false);
+  const [alertDetails, setAlertDetails] = useState(null); // State to hold alert details
 
   useEffect(() => {
     setNodes([]);
     setEdges([]);
     setLoading(true);
 
-    axios.get(`http://127.0.0.1:5000/api/network/${alertId}`)
-      .then(response => {
-        const { nodes, edges } = response.data;
-
+    // Fetch both the network data and the alert details
+    const fetchData = async () => {
+      try {
+        // Fetch network data
+        const networkResponse = await axios.get(`http://127.0.0.1:5000/api/network/${alertId}`);
+        const { nodes, edges } = networkResponse.data;
         const sortedEdges = edges.sort((a, b) => new Date(a.time) - new Date(b.time));
 
         const nodesByRank = nodes.reduce((acc, node) => {
@@ -61,12 +65,19 @@ const NetworkPage = () => {
 
         setNodes(positionedNodes);
         setEdges(sortedEdges);
+
+        // Fetch alert details
+        const alertResponse = await axios.get(`http://127.0.0.1:5000/alert/${alertId}`);
+        setAlertDetails(alertResponse.data); // Set the alert details to state
+
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching network data:', error);
+      } catch (error) {
+        console.error('Error fetching data:', error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, [alertId]);
 
   const handleNodeClick = (event) => {
@@ -190,6 +201,22 @@ const NetworkPage = () => {
       <button className="toggle-button" onClick={toggleTransparentEdges}>
         {showTransparent ? "Hide Transparent Edges" : "Show Transparent Edges"}
       </button>
+
+      {/* Alert Details Card */}
+      {alertDetails && (
+        <Card className="alert-details-card" sx={{ marginBottom: 3 }}>
+          <CardContent>
+            <Typography variant="h6">{alertDetails.name} Details</Typography>
+            <Typography><strong>ID:</strong> {alertDetails.id}</Typography>
+            <Typography><strong>Description:</strong> {alertDetails.description}</Typography>
+            <Typography><strong>Severity:</strong> {alertDetails.severity}</Typography>
+            <Typography><strong>Machine:</strong> {alertDetails.machine}</Typography>
+            <Typography><strong>Occured On:</strong> {alertDetails.occured_on}</Typography>
+            <Typography><strong>Program:</strong> {alertDetails.program}</Typography>
+          </CardContent>
+        </Card>
+      )}
+
       <div id="network-visualization">
         <Graph
           key={uuid()}

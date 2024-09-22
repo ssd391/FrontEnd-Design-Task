@@ -1,14 +1,14 @@
 /* General Styles */
 body {
-  background-color: #121212; /* Dark background */
-  color: #ffffff; /* Light text for contrast */
+  background-color: #ffffff; /*#121212;Dark background */
+  color: black/*#ffffff; Light text for contrast */
 }
 
 .dashboard {
   padding: 20px;
-  background-color: #121212; /* Dark background */
+  background-color: #ffffff; /* Dark background */
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
 }
 
 h1 {
@@ -34,7 +34,7 @@ h1 {
 
 .card {
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .card-content {
