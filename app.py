@@ -8,8 +8,8 @@ from datetime import datetime
 import sqlite3
 import sqlalchemy.exc
 import os
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
+import random
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -56,7 +56,8 @@ class File(db.Model):
 with app.app_context():
     db.create_all()
 
-
+def random_date(start, end):
+   return start + timedelta(seconds=random.randint(0, int((end - start).total_seconds())))
 # Function to add dummy data
 def add_dummy_data():
     # Define a list of dummy alerts
@@ -110,6 +111,19 @@ def add_dummy_data():
         {"id": 46, "name": "Alert46", "description": "Persistence - Office Application Startup - Word", "machine": "Machine 6", "occurred_on": "2022-07-20 00:04:56.790381", "severity": "High", "program": "excel.exe"},
         {"id": 47, "name": "Alert47", "description": "Initial Access - MS Office Applications Loading Suspicious Visual Basic Libraries", "machine": "Machine 6", "occurred_on": "2022-07-20 00:09:54.846445", "severity": "Medium", "program": "winword.exe"},
     ]
+    start_date = datetime(2023, 6, 1)
+    end_date = datetime(2023, 6, 15)
+
+
+    for alert in alerts:
+        if alert["occurred_on"] == "Varied":
+            new_date = random_date(start_date, end_date)
+            alert["occurred_on"] = new_date.strftime("%Y-%m-%d %H:%M:%S.%f")
+        elif isinstance(alert["occurred_on"], str) and alert["occurred_on"] != "Varied":
+            original_date = datetime.strptime(alert["occurred_on"], "%Y-%m-%d %H:%M:%S.%f")
+            new_date = random_date(start_date, end_date)
+            new_datetime = datetime.combine(new_date.date(), original_date.time())
+            alert["occurred_on"] = new_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
     # Iterate over the dummy alerts and check if they exist in the database
     for alert_data in alerts:
         alert = Alert.query.get(alert_data['id'])  # Check by ID

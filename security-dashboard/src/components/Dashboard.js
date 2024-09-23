@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, navigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -32,20 +32,6 @@ import {
 } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider, styled, useTheme } from '@mui/material/styles'; // Import styled and useTheme
-import {
-  PieChart,
-  Pie,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  Cell,
-  LineChart,
-  Line
-} from 'recharts'; // Import recharts components
 import MenuIcon from '@mui/icons-material/Menu';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
@@ -60,6 +46,25 @@ import { Grid } from '@mui/material';
 import Modal from './Modal.js'
 import AddIcon from '@mui/icons-material/Add'; // Import Add Icon
 import InfoIcon from '@mui/icons-material/Info'; // Import Info Icon
+import moment from 'moment';
+import { ResponsiveContainer } from 'recharts';
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import {
+  PieChart,
+  Pie,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
+  LineChart,
+  Line,
+  ComposedChart
+ } from 'recharts';
 
 const drawerWidth = 240;
 
@@ -100,6 +105,7 @@ const AppBar = styled(MuiAppBar, {
     })
   })
 }));
+
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -159,6 +165,11 @@ const Dashboard = ({ setAuth }) => {
     } catch (error) {
       console.error('Error fetching alerts:', error);
     }
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleCloseUserMenu();
   };
 
   // Calculate stats for alerts by severity
@@ -359,6 +370,35 @@ const Dashboard = ({ setAuth }) => {
           return '#000'; // Default black
       }
     };
+
+    const prepareTimeSeriesData = () => {
+      const dateCount = alerts.reduce((acc, alert) => {
+        if (alert.occured_on && alert.occured_on !== 'Varied') {
+          const date = moment(alert.occured_on, "YYYY-MM-DD HH:mm:ss.SSSSSS");
+          if (date.isValid()) {
+            const dateString = date.format("YYYY-MM-DD");
+            acc[dateString] = (acc[dateString] || 0) + 1;
+          }
+        }
+        return acc;
+      }, {});
+       return Object.entries(dateCount)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => moment(a.date).diff(moment(b.date)));
+    };
+   
+   
+    const timeSeriesData = prepareTimeSeriesData();
+    console.log(timeSeriesData);
+    
+    // Calculate important stats
+    const totalAlertsDay = timeSeriesData.reduce((sum, day) => sum + day.count, 0);
+    const dateRange = timeSeriesData.length > 0
+      ? `${timeSeriesData[0].date} to ${timeSeriesData[timeSeriesData.length - 1].date}`
+      : 'No data';
+    const peakDay = timeSeriesData.reduce((max, day) =>
+      day.count > max.count ? day : max
+    , { date: '', count: 0 });
   
     // Get the two most recent alerts based on occurred_on
     const getRecentAlerts = () => {
@@ -398,73 +438,91 @@ const Dashboard = ({ setAuth }) => {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Box sx={{ display: 'flex', backgroundColor : '#ffffff' }}>
-        <AppBar position="fixed" open={open}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(open && { display: 'none' }) }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton onClick={handleOpenUserMenu} color="inherit">
-                <Avatar alt={username} src="/path-to-user-image.jpg" sx={{ width: 40, height: 40 }} />
-              </IconButton>
-              <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                {username}
-              </Typography>
-            </Box>
-          </Toolbar>
-        </AppBar>
-        <Menu
-          sx={{ mt: '45px' }}
-          id="menu-appbar"
-          anchorEl={anchorElUser}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          open={Boolean(anchorElUser)}
-          onClose={handleCloseUserMenu}
-        >
-          <MenuItem onClick={handleCloseUserMenu}>
-            <Typography textAlign="center">My Profile</Typography>
-          </MenuItem>
-          <MenuItem onClick={() => { setAuth(false); navigate('/login'); }}>
-            <Typography textAlign="center">Logout</Typography>
-          </MenuItem>
-        </Menu>
-        <Drawer
-          sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } }}
-          variant="persistent"
-          anchor="left"
-          open={open}
-        >
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <List>
-            {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Drawer>
+
+      <AppBar position="fixed" open={open}>
+           <Toolbar>
+             <IconButton
+               color="inherit"
+               aria-label="open drawer"
+               onClick={handleDrawerOpen}
+               edge="start"
+               sx={{ mr: 2, ...(open && { display: 'none' }) }}
+             >
+               <MenuIcon />
+             </IconButton>
+             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+               Threat Detection Dashboard
+             </Typography>
+             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+               <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                 {username}
+               </Typography>
+               <IconButton onClick={handleOpenUserMenu} color="inherit">
+                 <Avatar alt={username} src="/path-to-user-image.jpg" sx={{ width: 40, height: 40 }} />
+               </IconButton>
+             </Box>
+           </Toolbar>
+       </AppBar>
+       <Menu
+         sx={{ mt: '45px' }}
+         id="menu-appbar"
+         anchorEl={anchorElUser}
+         anchorOrigin={{
+           vertical: 'top',
+           horizontal: 'right',
+         }}
+         keepMounted
+         transformOrigin={{
+           vertical: 'top',
+           horizontal: 'right',
+         }}
+         open={Boolean(anchorElUser)}
+         onClose={handleCloseUserMenu}
+       >
+         <MenuItem onClick={handleProfileClick}>
+           <Typography textAlign="center">My Profile</Typography>
+         </MenuItem>
+         <MenuItem onClick={() => { setAuth(false); navigate('/login'); }}>
+           <Typography textAlign="center">Logout</Typography>
+         </MenuItem>
+       </Menu>
+       <Drawer
+             sx={{
+               width: drawerWidth,
+               flexShrink: 0,
+               '& .MuiDrawer-paper': {
+                 width: drawerWidth,
+                 boxSizing: 'border-box'
+               }
+             }}
+             variant="persistent"
+             anchor="left"
+             open={open}
+           >
+             <DrawerHeader>
+               <IconButton sx={{ color: 'grey' }} onClick={handleDrawerClose}>
+                 {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+               </IconButton>
+             </DrawerHeader>
+             <Divider />
+             <List>
+               <ListItem key="Upload" disablePadding>
+                 <ListItemButton component={Link} to="/upload">
+                   <ListItemIcon sx={{ color: 'grey' }}><DriveFolderUploadIcon /></ListItemIcon>
+                   <ListItemText primary="Upload" />
+                 </ListItemButton>
+               </ListItem>
+             </List>
+             <Divider />
+             <List>
+             <ListItem key="Processing" disablePadding>
+                 <ListItemButton component={Link} to="/processing">
+                   <ListItemIcon sx={{ color: 'grey' }}><AutorenewIcon/></ListItemIcon>
+                   <ListItemText primary="Processing" />
+                 </ListItemButton>
+               </ListItem>
+             </List>
+           </Drawer>
 
         {/* Main Content */}
         <Main open={open}>
@@ -514,7 +572,8 @@ const Dashboard = ({ setAuth }) => {
                 <IconButton
                   onClick={() => navigate('/alerts')}
                   size="small"
-                  sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5 }}
+                  sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5, '&:hover': { backgroundColor: '#333' },  // Darker hover state
+                  '&:active': { backgroundColor: '#111' }, '&:hover': { backgroundColor: '#333' } }}
                 >
                   <AddIcon />
                 </IconButton>
@@ -541,7 +600,7 @@ const Dashboard = ({ setAuth }) => {
                     {/* Replace 'More info' button with smaller info icon button */}
                     <IconButton
                       size="small"
-                      sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5 }}
+                      sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5, '&:active': { backgroundColor: '#111' }, '&:hover': { backgroundColor: '#333' } }}
                       onClick={() => openModal(alert)}
                     >
                       <InfoIcon fontSize="small" /> {/* Set the icon size to small */}
@@ -555,74 +614,105 @@ const Dashboard = ({ setAuth }) => {
 
           {/* Graphs Section */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px', mb: '20px', flexWrap: 'wrap' }}>
-          <Box sx={{               display: 'flex',
-              gap: '20px',
-              mb: '20px',
-              width: '50%', }}>
-          <Grid item xs={40}>
-                  <Card sx={{ p: 15 }}>
-                    <Typography variant="h6">Severity by Machine</Typography>
-                    <BarChart width={500} height={300} data={stackedBarData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="machine" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="high" stackId="a" fill="#EE4266" />
-                      <Bar dataKey="medium" stackId="a" fill="#FFD23F" />
-                      <Bar dataKey="low" stackId="a" fill="#337357" />
-                    </BarChart>
-                  </Card>
-                </Grid>
-          </Box>
-          <Box sx={{               display: 'flex',
-              gap: '20px',
-              mb: '20px',
-              ml: 'auto', // Move to the right side
-              width: '40%', }}>
-              <Grid container spacing={2}>
-                {/* Severity Stats Chart */}
-                <Grid item xs={12}>
-                  <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px' }}>
-                    <Typography variant="h6">Severity Stats</Typography>
-                    <Box sx={{ display: 'flex', mb: 2 }}>
-                      <Box sx={{ flex: severityStats.high, backgroundColor: '#EE4266', height: '8px', borderRadius: '4px' }} />
-                      <Box sx={{ flex: severityStats.medium, backgroundColor: '#FFD23F', height: '8px', borderRadius: '4px' }} />
-                      <Box sx={{ flex: severityStats.low, backgroundColor: '#337357', height: '8px', borderRadius: '4px' }} />
-                    </Box>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}><Typography>High Severity</Typography></Grid>
-                      <Grid item xs={3}><Typography>{severityStats.high}</Typography></Grid>
-                      <Grid item xs={3}><Typography>{((severityStats.high / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
-                      <Grid item xs={6}><Typography>Medium Severity</Typography></Grid>
-                      <Grid item xs={3}><Typography>{severityStats.medium}</Typography></Grid>
-                      <Grid item xs={3}><Typography>{((severityStats.medium / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
-                      <Grid item xs={6}><Typography>Low Severity</Typography></Grid>
-                      <Grid item xs={3}><Typography>{severityStats.low}</Typography></Grid>
-                      <Grid item xs={3}><Typography>{((severityStats.low / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
+         <Card sx={{ width: '48%', minWidth: '300px', p: 0, borderRadius: '15px', backgroundColor: '#f1f7f7', overflow: 'hidden' }}>
+ <Box sx={{
+   backgroundColor: '#CAE2E2',
+   borderRadius: '15px',
+   overflow: 'hidden',
+   height: '70%',
+   p: 2,
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center'
+ }}>
+   <ResponsiveContainer width="100%" height="100%">
+  <ComposedChart data={timeSeriesData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+       <CartesianGrid strokeDasharray="3 3" stroke="rgba(46,125,50,0.3)" />
+       <XAxis
+         dataKey="date"
+         tickFormatter={(tick) => moment(tick).format('MM/DD')}
+         stroke="#2e7d32"
+       />
+       <YAxis yAxisId="left" stroke="#2e7d32" />
+       <YAxis yAxisId="right" orientation="right" stroke="#2e7d32" />
+       <Tooltip
+         labelFormatter={(label) => moment(label).format('YYYY-MM-DD')}
+         contentStyle={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}
+       />
+       <Legend wrapperStyle={{ color: '#2e7d32' }} />
+       <Bar yAxisId="left" dataKey="count" fill="#ffffff" name="Alert Count" barSize={30} />
+       <Line
+         yAxisId="right"
+         type="monotone"
+         dataKey="count"
+         stroke="#1b5e20"
+         name="Trend"
+         strokeWidth={3}
+       />
+     </ComposedChart>
+   </ResponsiveContainer>
+ </Box>
+ <Box sx={{ p: 2, height: '30%' }}>
+   <Divider sx={{ mb: 2 }} />
+   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+     <Box sx={{ width: '32%', textAlign: 'center' }}>
+       <Typography variant="subtitle1" color="text.secondary" sx={{ fontSize: '1.1rem', color: '#333333', fontWeight: 'medium' }}>Total Alerts</Typography>
+       <Typography variant="h6" color="text.primary">{totalAlertsDay}</Typography>
+     </Box>
+     <Box sx={{ width: '32%', textAlign: 'center' }}>
+       <Typography variant="subtitle1" color="text.secondary" sx={{ fontSize: '1.1rem', color: '#333333', fontWeight: 'medium' }}>Date Range</Typography>
+       <Typography variant="h6" color="text.primary">{dateRange}</Typography>
+     </Box>
+     <Box sx={{ width: '32%', textAlign: 'center' }}>
+       <Typography variant="subtitle1" color="text.secondary" sx={{ fontSize: '1.1rem', color: '#333333', fontWeight: 'medium' }}>Peak Day</Typography>
+       <Typography variant="h6" color="text.primary">{peakDay.date}</Typography>
+       <Typography variant="subtitle2" color="text.secondary">({peakDay.total} alerts)</Typography>
+     </Box>
+   </Box>
+    {/* <Typography variant="h6" align="center" sx={{ pt: 2, pb: 1 }}>Alerts Over Time</Typography> */}
+ </Box>
+</Card>
 
-                {/* Severity by Machine Chart */}
-                <Grid item xs={12}>
-                  <Card sx={{ p: 2 }}>
-                    <Typography variant="h6">Severity by Machine</Typography>
-                    <BarChart width={500} height={300} data={stackedBarData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="machine" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="high" stackId="a" fill="#EE4266" />
-                      <Bar dataKey="medium" stackId="a" fill="#FFD23F" />
-                      <Bar dataKey="low" stackId="a" fill="#337357" />
-                    </BarChart>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-            </Box>
+
+ <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '48%' }}>
+   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px' }}>
+     <Typography variant="h6" align="center" sx={{ mb: 2 }}>Severity Stats</Typography>
+     <Box sx={{ display: 'flex', mb: 2 }}>
+       <Box sx={{ flex: severityStats.high, backgroundColor: '#FF8080', height: '8px', borderRadius: '4px' }} />
+       <Box sx={{ flex: severityStats.medium, backgroundColor: '#FFFF9D', height: '8px', borderRadius: '4px' }} />
+       <Box sx={{ flex: severityStats.low, backgroundColor: '#C0EDA6', height: '8px', borderRadius: '4px' }} />
+     </Box>
+     <Grid container spacing={2}>
+       <Grid item xs={6}><Typography>High Severity</Typography></Grid>
+       <Grid item xs={3}><Typography>{severityStats.high}</Typography></Grid>
+       <Grid item xs={3}><Typography>{((severityStats.high / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
+       <Grid item xs={6}><Typography>Medium Severity</Typography></Grid>
+       <Grid item xs={3}><Typography>{severityStats.medium}</Typography></Grid>
+       <Grid item xs={3}><Typography>{((severityStats.medium / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
+       <Grid item xs={6}><Typography>Low Severity</Typography></Grid>
+       <Grid item xs={3}><Typography>{severityStats.low}</Typography></Grid>
+       <Grid item xs={3}><Typography>{((severityStats.low / alerts.length) * 100).toFixed(1)}%</Typography></Grid>
+     </Grid>
+   </Card>
+
+
+   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px' }}>
+     <Typography variant="h6" align="center" sx={{ mb: 2 }}>Severity by Machine</Typography>
+     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+       <BarChart width={500} height={300} data={stackedBarData}>
+         <CartesianGrid strokeDasharray="3 3" />
+         <XAxis dataKey="machine" />
+         <YAxis />
+         <Tooltip />
+         <Legend />
+         <Bar dataKey="high" stackId="a" fill="#FF8080" />
+         <Bar dataKey="medium" stackId="a" fill="#FFFF9D" />
+         <Bar dataKey="low" stackId="a" fill="#C0EDA6" />
+       </BarChart>
+     </Box>
+   </Card>
+ </Box>
+</Box>
 
           {/* Search and Actions Section */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -639,60 +729,174 @@ const Dashboard = ({ setAuth }) => {
             </Box>
             {/* Action Buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Button variant="contained" sx={{ mr: 2 }} startIcon={<FileDownloadOutlinedIcon />} onClick={exportToExcel}>
-                Export to Excel
-              </Button>
-              <Button variant="contained" startIcon={<RefreshIcon />} onClick={fetchAlerts}>
-                Refresh Data
-              </Button>
+              <IconButton
+                onClick={fetchAlerts}
+                size="large"
+                sx={{
+                  backgroundColor: 'black',
+                  color: 'white',
+                  p: 2,
+                  borderRadius: '4px', // Make the button rectangular with slightly rounded corners
+                  width: 'auto', // Set auto width
+                  height: 'auto', // Set auto height
+                  '&:hover': { backgroundColor: '#333' },  // Darker hover state
+                  '&:active': { backgroundColor: '#111' } , // Even darker active state
+                  marginRight: 1
+                }}
+              >
+                <FileDownloadOutlinedIcon />
+              </IconButton>
+              <IconButton
+                onClick={fetchAlerts}
+                size="large"
+                sx={{
+                  backgroundColor: 'black',
+                  color: 'white',
+                  p: 2,
+                  borderRadius: '4px', // Make the button rectangular with slightly rounded corners
+                  width: 'auto', // Set auto width
+                  height: 'auto', // Set auto height
+                  '&:hover': { backgroundColor: '#333' },  // Darker hover state
+                  '&:active': { backgroundColor: '#111' }  // Even darker active state
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
             </Box>
           </Box>
 
           {/* Alerts Table */}
-          <TableContainer component={Paper} style={{ height: '100%', overflow: 'auto' }}>
-            <Table stickyHeader aria-label="alerts table">
-              <TableHead>
-                <TableRow>
-                  {['id', 'name', 'description', 'severity', 'machine'].map((column) => (
-                    <TableCell key={column}>
-                      <TableSortLabel
-                        active={orderBy === column}
-                        direction={orderBy === column ? order : 'asc'}
-                        onClick={() => handleRequestSort(column)}
-                      >
-                        {column.charAt(0).toUpperCase() + column.slice(1)}
-                      </TableSortLabel>
-                    </TableCell>
-                  ))}
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sortedAlerts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((alert) => (
-                  <TableRow key={alert.id} style={getRowStyle(alert.severity)}>
-                    {['id', 'name', 'description', 'severity', 'machine'].map((field) => (
-                      <TableCell key={field}>{alert[field]}</TableCell>
-                    ))}
-                    <TableCell>
-                      <Button variant="contained" sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' } }} onClick={() => openModal(alert)}>
-                        More Info
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <TableContainer component={Paper} style={{ height: '100%', overflow: 'auto', boxShadow: 'none', borderRadius: '8px' }}>
+  <Table
+    stickyHeader
+    aria-label="alerts table"
+    sx={{
+      fontFamily: 'Nunito, sans-serif', // Apply Nunito font
+      fontSize: '16px', // Increase font size
+      borderCollapse: 'separate',
+      borderSpacing: 0,
+      '& .MuiTableCell-root': {
+        borderBottom: 'none', // Remove partition lines between rows
+      },
+    }}
+  >
+    <TableHead>
+      <TableRow
+        sx={{
+          backgroundColor: '#f5f5f5', // Light grey background for headers
+        }}
+      >
+        {['id', 'name', 'description', 'severity', 'machine'].map((column) => (
+          <TableCell
+            key={column}
+            sx={{
+              fontWeight: 'bold', // Make headers bold
+              textAlign: 'left', // Align text to the left
+              fontSize: '18px', // Increase font size for headers
+              color: '#333', // Dark grey color for text
+              borderBottom: '2px solid #ddd', // Light border for header
+            }}
+          >
+            <TableSortLabel
+              active={orderBy === column}
+              direction={orderBy === column ? order : 'asc'}
+              onClick={() => handleRequestSort(column)}
+              sx={{ color: '#333', '&:hover': { color: '#555' } }} // Dark grey on hover
+            >
+              {column.charAt(0).toUpperCase() + column.slice(1)}
+            </TableSortLabel>
+          </TableCell>
+        ))}
+        <TableCell sx={{ fontWeight: 'bold', textAlign: 'left', fontSize: '18px', color: '#333', borderBottom: '2px solid #ddd' }}>
+          Actions
+        </TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {sortedAlerts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((alert) => (
+        <TableRow
+          key={alert.id}
+          sx={{
+            '&:hover': {
+              backgroundColor: '#f9f9f9', // Lighter grey background on hover
+            },
+            transition: 'background-color 0.2s ease-in-out',
+          }}
+        >
+          {['id', 'name', 'description', 'severity', 'machine'].map((field) => (
+            <TableCell
+              key={field}
+              sx={{
+                padding: '12px 16px', // Add padding for better readability
+                fontSize: '16px', // Increase font size for content
+                color: '#555', // Dark grey for content
+              }}
+            >
+              {/* Check if it's the severity column to render the colored square */}
+              {field === 'severity' ? (
+                <Box
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    backgroundColor: getSeverityColor(alert.severity), // Function to get color based on severity
+                    borderRadius: '4px', // Make it square
+                    display: 'inline-block',
+                    mr: 1, // Add margin to the right of the square
+                  }}
+                />
+              ) : (
+                alert[field]
+              )}
+            </TableCell>
+          ))}
+          <TableCell>
+            <IconButton
+              size="small"
+              sx={{
+                backgroundColor: 'black',
+                color: 'white',
+                borderRadius: '4px',
+                p: 0.5,
+                '&:hover': { backgroundColor: '#333' },
+                '&:active': { backgroundColor: '#111' },
+              }}
+              onClick={() => openModal(alert)}
+            >
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
 
-            {/* Pagination */}
-            <TablePagination
-              component="div"
-              count={sortedAlerts.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </TableContainer>
+  {/* Styled Pagination */}
+  <TablePagination
+    component="div"
+    count={sortedAlerts.length}
+    page={page}
+    onPageChange={handleChangePage}
+    rowsPerPage={rowsPerPage}
+    onRowsPerPageChange={handleChangeRowsPerPage}
+    sx={{
+      fontFamily: 'Nunito, sans-serif', // Apply same font to pagination
+      fontSize: '16px',
+      color: '#333',
+      backgroundColor: '#f5f5f5',
+      '& .MuiTablePagination-selectLabel': {
+        fontWeight: 'bold', // Make pagination text bold
+      },
+      '& .MuiTablePagination-input': {
+        fontWeight: 'bold', // Make rows per page text bold
+      },
+      '& .MuiTablePagination-actions': {
+        color: '#333',
+      },
+    }}
+  />
+</TableContainer>
+
+
 
           {/* Modal */}
           {isModalOpen && <Modal show={isModalOpen} onClose={closeModal} alert={selectedAlert} />}
