@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, navigate } from 'react-router-dom';
 import {
   Table,
@@ -8,6 +8,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Tooltip as MTooltip,
   TablePagination,
   TextField,
   Button,
@@ -148,6 +149,14 @@ const Dashboard = ({ setAuth }) => {
   }, [alerts]);
 
   const totalAlerts = severityStats.high + severityStats.medium + severityStats.low;
+
+  const tableRef = useRef(null); // Create a ref for the table component
+
+  const handleScrollToTable = () => {
+    if (tableRef.current) {
+      tableRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll to the table component
+    }
+  };
 
   // Function to calculate the percentage
   const getPercentage = (count) => (totalAlerts > 0 ? ((count / totalAlerts) * 100).toFixed(1) : 0);
@@ -569,14 +578,36 @@ const Dashboard = ({ setAuth }) => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6">Recent Alerts</Typography>
                 {/* Replace 'View all' button with '+' icon button */}
-                <IconButton
-                  onClick={() => navigate('/alerts')}
-                  size="small"
-                  sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5, '&:hover': { backgroundColor: '#333' },  // Darker hover state
-                  '&:active': { backgroundColor: '#111' }, '&:hover': { backgroundColor: '#333' } }}
-                >
-                  <AddIcon />
-                </IconButton>
+                <MTooltip title="View All Alerts" arrow placement='left'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: 'black', // Tooltip background
+                            color: 'white', // Tooltip text color
+                            fontFamily: 'Nunito, sans-serif', // Tooltip font family
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'black', // Arrow color should match the tooltip background
+                          },
+                        },
+                      }}>
+                  <IconButton
+                    onClick={handleScrollToTable}
+                    size="small"
+                    sx={{
+                      backgroundColor: 'black',
+                      color: 'white',
+                      borderRadius: '50%',
+                      p: 0.5,
+                      '&:hover': { backgroundColor: '#333' }, // Darker hover state
+                      '&:active': { backgroundColor: '#111' },
+                    }}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </MTooltip>
               </Box>
               <Divider sx={{ my: 1 }} />
               <Box>
@@ -598,6 +629,21 @@ const Dashboard = ({ setAuth }) => {
                       </Typography>
                     </Box>
                     {/* Replace 'More info' button with smaller info icon button */}
+                    <MTooltip title="View Info" arrow placement='left'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: 'black', // Tooltip background
+                            color: 'white', // Tooltip text color
+                            fontFamily: 'Nunito, sans-serif', // Tooltip font family
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'black', // Arrow color should match the tooltip background
+                          },
+                        },
+                      }}>
                     <IconButton
                       size="small"
                       sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', p: 0.5, '&:active': { backgroundColor: '#111' }, '&:hover': { backgroundColor: '#333' } }}
@@ -605,6 +651,7 @@ const Dashboard = ({ setAuth }) => {
                     >
                       <InfoIcon fontSize="small" /> {/* Set the icon size to small */}
                     </IconButton>
+                    </MTooltip>
                   </Box>
                 ))}
               </Box>
@@ -615,16 +662,16 @@ const Dashboard = ({ setAuth }) => {
           {/* Graphs Section */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px', mb: '20px', flexWrap: 'wrap' }}>
          <Card sx={{ width: '48%', minWidth: '300px', p: 0, borderRadius: '15px', backgroundColor: '#f1f7f7', overflow: 'hidden' }}>
- <Box sx={{
-   backgroundColor: '#CAE2E2',
-   borderRadius: '15px',
-   overflow: 'hidden',
-   height: '70%',
-   p: 2,
-   display: 'flex',
-   justifyContent: 'center',
-   alignItems: 'center'
- }}>
+          <Box sx={{
+            backgroundColor: '#CAE2E2',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            height: '70%',
+            p: 2,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
    <ResponsiveContainer width="100%" height="100%">
   <ComposedChart data={timeSeriesData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
        <CartesianGrid strokeDasharray="3 3" stroke="rgba(46,125,50,0.3)" />
@@ -728,7 +775,22 @@ const Dashboard = ({ setAuth }) => {
               />
             </Box>
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box ref={tableRef} sx={{ display: 'flex', alignItems: 'center' }}>
+            <MTooltip title="Export to excel" arrow placement='bottom'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: 'black', // Tooltip background
+                            color: 'white', // Tooltip text color
+                            fontFamily: 'Nunito, sans-serif', // Tooltip font family
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'black', // Arrow color should match the tooltip background
+                          },
+                        },
+                      }}>
               <IconButton
                 onClick={fetchAlerts}
                 size="large"
@@ -746,6 +808,22 @@ const Dashboard = ({ setAuth }) => {
               >
                 <FileDownloadOutlinedIcon />
               </IconButton>
+              </MTooltip>
+              <MTooltip title="Refresh" arrow placement='bottom'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: 'black', // Tooltip background
+                            color: 'white', // Tooltip text color
+                            fontFamily: 'Nunito, sans-serif', // Tooltip font family
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'black', // Arrow color should match the tooltip background
+                          },
+                        },
+                      }}>
               <IconButton
                 onClick={fetchAlerts}
                 size="large"
@@ -762,6 +840,7 @@ const Dashboard = ({ setAuth }) => {
               >
                 <RefreshIcon />
               </IconButton>
+              </MTooltip>
             </Box>
           </Box>
 
@@ -850,6 +929,21 @@ const Dashboard = ({ setAuth }) => {
             </TableCell>
           ))}
           <TableCell>
+          <MTooltip title="View Info" arrow placement='left'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: 'black', // Tooltip background
+                            color: 'white', // Tooltip text color
+                            fontFamily: 'Nunito, sans-serif', // Tooltip font family
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'black', // Arrow color should match the tooltip background
+                          },
+                        },
+                      }}>
             <IconButton
               size="small"
               sx={{
@@ -864,6 +958,7 @@ const Dashboard = ({ setAuth }) => {
             >
               <InfoIcon fontSize="small" />
             </IconButton>
+            </MTooltip>
           </TableCell>
         </TableRow>
       ))}
