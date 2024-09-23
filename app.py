@@ -10,8 +10,8 @@ import sqlalchemy.exc
 import os
 import random
 from datetime import datetime, timedelta
-
-
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 app = Flask(__name__)
 
 CORS(app)
