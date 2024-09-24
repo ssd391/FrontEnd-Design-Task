@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import styles from './ProcessingPage.module.css';
+import {
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  CircularProgress,
+  Box,
+} from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 
 const ProcessingPage = () => {
   const [files, setFiles] = useState([]);
@@ -9,74 +25,81 @@ const ProcessingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const interval = setInterval(fetchFileStatuses, 1000); // Polling every 5 seconds
+    const interval = setInterval(fetchFileStatuses, 5000); // Polling every 5 seconds
     return () => clearInterval(interval); // Clean up the interval on unmount
 
     // Initial fetch
     fetchFileStatuses();
-
-    async function fetchFileStatuses() {
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/api/files');
-        setFiles(response.data.files);
-      } catch (error) {
-        console.error('Error fetching file statuses:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
   }, []);
 
+  async function fetchFileStatuses() {
+    try {
+      // Simulating API call with dummy data
+      const dummyData = [
+        { filename: 'data1.csv', status: 'completed' },
+        { filename: 'data2.csv', status: 'processing' },
+        { filename: 'data3.csv', status: 'completed' },
+        { filename: 'data4.csv', status: 'processing' },
+      ];
+      setFiles(dummyData);
+    } catch (error) {
+      console.error('Error fetching file statuses:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        {/*<button onClick={() => navigate('/upload')} className="home-button">
-          <div className="home-icon-circle">
-            <i className="fa fa-arrow-circle-left home-icon"></i>
-          </div>
-        </button>*/}
-        <button onClick={() => navigate('/')} className="home-button-proc">
-          <div className="home-icon-circle-proc">
-            <i className="fa fa-home home-icon-proc"></i>
-          </div>
-        </button>
-      </div>
-      <h1 className={styles.title}>Processing Page</h1>
-      <div className={styles.tableContainer}>
-        {loading ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-            Loading...
-          </div>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>File Name</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {files.map((file, index) => (
-                <tr key={index}>
-                  <td>{file.filename}</td>
-                  <td>
-                    {file.status === 'processing' ? (
-                      <div className={styles.status}>
-                        Processing
-                        <div className={styles.smallSpinner}></div>
-                      </div>
-                    ) : (
-                      'Completed'
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+    <Container maxWidth="md">
+      <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
+        <IconButton onClick={() => navigate('/')} color="primary">
+          <HomeIcon sx={{ color: 'black' }} />
+        </IconButton>
+      </Box>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 4, textAlign: 'center' }}>
+        Processing Page
+      </Typography>
+      <Paper elevation={3} sx={{ borderRadius: '15px', overflow: 'hidden' }}>
+        <TableContainer>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress sx={{ color: 'black' }} />
+            </Box>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'black' }}>File Name</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', color: 'black' }}>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {files.map((file, index) => (
+                  <TableRow key={index}>
+                    <TableCell component="th" scope="row" sx={{ color: 'black' }}>
+                      {file.filename}
+                    </TableCell>
+                    <TableCell align="right">
+                      {file.status === 'processing' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                          <HourglassEmptyIcon sx={{ mr: 1, color: 'orange' }} />
+                          <Typography sx={{ color: 'orange' }}>Processing</Typography>
+                        </Box>
+                      ) : (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                          <CheckCircleIcon sx={{ mr: 1, color: 'green' }} />
+                          <Typography sx={{ color: 'green' }}>Completed</Typography>
+                        </Box>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TableContainer>
+      </Paper>
+    </Container>
   );
 };
 

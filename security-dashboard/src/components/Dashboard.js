@@ -66,6 +66,7 @@ import {
   Line,
   ComposedChart
  } from 'recharts';
+ import ShieldIcon from '@mui/icons-material/Shield';
 
 const drawerWidth = 240;
 
@@ -217,7 +218,7 @@ const Dashboard = ({ setAuth }) => {
     { name: 'Low', value: stats.low }
   ];
 
-  const COLORS = ['#EE4266', '#FFD23F', '#337357'];
+  const COLORS = ['#FF8080', '#FFD23F', '#9FE477'];
 
   // Prepare data for bar chart (alerts per machine)
   const barData = Object.keys(machineStats).map((machine) => ({
@@ -331,11 +332,11 @@ const Dashboard = ({ setAuth }) => {
   const getRowStyle = (severity) => {
     switch (severity.toLowerCase()) {
       case 'high':
-        return { backgroundColor: '#EE4266', color: '#ffffff' }; // Red for High severity
+        return { backgroundColor: '#FF8080', color: '#ffffff' }; // Red for High severity
       case 'medium':
         return { backgroundColor: '#FFD23F', color: '#000000' }; // Yellow for Medium severity
       case 'low':
-        return { backgroundColor: '#337357', color: '#ffffff' }; // Green for Low severity
+        return { backgroundColor: '#9FE477', color: '#ffffff' }; // Green for Low severity
       default:
         return {};
     }
@@ -370,11 +371,11 @@ const Dashboard = ({ setAuth }) => {
     const getSeverityColor = (severity) => {
       switch (severity.toLowerCase()) {
         case 'high':
-          return '#EE4266'; // Red for High severity
+          return '#FF8080'; // Red for High severity
         case 'medium':
           return '#FFD23F'; // Yellow for Medium severity
         case 'low':
-          return '#337357'; // Green for Low severity
+          return '#9FE477'; // Green for Low severity
         default:
           return '#000'; // Default black
       }
@@ -427,6 +428,12 @@ const Dashboard = ({ setAuth }) => {
   };
 
   const darkTheme = createTheme({
+    typography: {
+      fontFamily: [
+        'Nunito',
+        'sans-serif',
+      ].join(','),
+    },
     palette: {
       mode: 'dark',
       background: {
@@ -459,9 +466,17 @@ const Dashboard = ({ setAuth }) => {
              >
                <MenuIcon />
              </IconButton>
-             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-               Threat Detection Dashboard
-             </Typography>
+             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'left', alignItems: 'left' }}>
+                <img 
+                  src={`${process.env.PUBLIC_URL}/logo.png`}
+                  alt="Threat Detection Dashboard Logo"
+                  style={{ 
+                    height: '40px',
+                    width: '100px',
+                    objectFit: 'contain'
+                  }}
+                />
+              </Box>
              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                <Typography variant="subtitle1" sx={{ mr: 1 }}>
                  {username}
@@ -537,14 +552,22 @@ const Dashboard = ({ setAuth }) => {
         <Main open={open}>
           <DrawerHeader />
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px', mb: '20px', flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '20px' }}>
-          <Typography variant='h2' component="div">
-            Threat Detection
-          </Typography>
-          <Typography variant='h2' component="div">
-            Dashboard
-          </Typography>
-        </Box>
+          <Box sx={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    mb: '20px', 
+    ml:'110px', 
+    justifyContent: 'center'
+  }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Typography variant='h2' component="div" fontWeight="bold">
+        Threat Detection
+      </Typography>
+      <Typography variant='h2' component="div" fontWeight="bold">
+        Dashboard
+      </Typography>
+    </Box>
+  </Box>
           {/* Stats Section */}
           <Box
             className="stats"
@@ -576,7 +599,7 @@ const Dashboard = ({ setAuth }) => {
             ))} */}
             <Card sx={{ minWidth: 350, padding: '20px', mb: '20px', backgroundColor: '#ffffff', boxShadow: 'none' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Recent Alerts</Typography>
+                <Typography variant="h6" sx={{'fontWeight':'bold'}}>Recent Alerts</Typography>
                 {/* Replace 'View all' button with '+' icon button */}
                 <MTooltip title="View All Alerts" arrow placement='left'
                       componentsProps={{
@@ -661,7 +684,7 @@ const Dashboard = ({ setAuth }) => {
 
           {/* Graphs Section */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: '20px', mb: '20px', flexWrap: 'wrap' }}>
-         <Card sx={{ width: '48%', minWidth: '300px', p: 0, borderRadius: '15px', backgroundColor: '#f1f7f7', overflow: 'hidden' }}>
+         <Card sx={{ width: '48%', minWidth: '300px', p: 0, borderRadius: '15px', backgroundColor: '#f1f7f7', overflow: 'hidden', boxShadow:'none'}}>
           <Box sx={{
             backgroundColor: '#CAE2E2',
             borderRadius: '15px',
@@ -722,12 +745,12 @@ const Dashboard = ({ setAuth }) => {
 
 
  <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '48%' }}>
-   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px' }}>
+   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px', boxShadow:'none'}}>
      <Typography variant="h6" align="center" sx={{ mb: 2 }}>Severity Stats</Typography>
      <Box sx={{ display: 'flex', mb: 2 }}>
        <Box sx={{ flex: severityStats.high, backgroundColor: '#FF8080', height: '8px', borderRadius: '4px' }} />
-       <Box sx={{ flex: severityStats.medium, backgroundColor: '#FFFF9D', height: '8px', borderRadius: '4px' }} />
-       <Box sx={{ flex: severityStats.low, backgroundColor: '#C0EDA6', height: '8px', borderRadius: '4px' }} />
+       <Box sx={{ flex: severityStats.medium, backgroundColor: '#FFD23F', height: '8px', borderRadius: '4px' }} />
+       <Box sx={{ flex: severityStats.low, backgroundColor: '#9FE477', height: '8px', borderRadius: '4px' }} />
      </Box>
      <Grid container spacing={2}>
        <Grid item xs={6}><Typography>High Severity</Typography></Grid>
@@ -743,7 +766,7 @@ const Dashboard = ({ setAuth }) => {
    </Card>
 
 
-   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px' }}>
+   <Card sx={{ p: 2, backgroundColor: '#f1f7f7', borderRadius: '15px', boxShadow:'none' }}>
      <Typography variant="h6" align="center" sx={{ mb: 2 }}>Severity by Machine</Typography>
      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
        <BarChart width={500} height={300} data={stackedBarData}>
@@ -753,8 +776,8 @@ const Dashboard = ({ setAuth }) => {
          <Tooltip />
          <Legend />
          <Bar dataKey="high" stackId="a" fill="#FF8080" />
-         <Bar dataKey="medium" stackId="a" fill="#FFFF9D" />
-         <Bar dataKey="low" stackId="a" fill="#C0EDA6" />
+         <Bar dataKey="medium" stackId="a" fill="#FFD23F" />
+         <Bar dataKey="low" stackId="a" fill="#9FE477" />
        </BarChart>
      </Box>
    </Card>
@@ -792,7 +815,7 @@ const Dashboard = ({ setAuth }) => {
                         },
                       }}>
               <IconButton
-                onClick={fetchAlerts}
+                onClick={exportToExcel}
                 size="large"
                 sx={{
                   backgroundColor: 'black',

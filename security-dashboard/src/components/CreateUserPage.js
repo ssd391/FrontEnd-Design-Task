@@ -7,21 +7,27 @@ import {
   Typography,
   Container,
   CssBaseline,
-  Paper
+  Paper,
+  Avatar,
+  Link
 } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-const darkTheme = createTheme({
+const lightTheme = createTheme({
   palette: {
-    mode: 'dark',
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e'
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
     },
-    text: {
-      primary: '#ffffff'
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff'
     }
-  }
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+  },
 });
 
 const CreateUserPage = () => {
@@ -32,37 +38,27 @@ const CreateUserPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Regex for strong password and valid email
   const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleCreateUser = (event) => {
     event.preventDefault();
 
-    // Check if password meets strength requirements
     if (!strongPasswordRegex.test(password)) {
       setError('Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.');
       return;
     }
 
-    // Check if email is valid
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address.');
       return;
     }
 
-    const userData = {
-      username,
-      password,
-      email,
-      name,
-    };
+    const userData = { username, password, email, name };
 
     fetch('http://127.0.0.1:5000/api/create-user', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     })
       .then(response => response.json())
@@ -79,11 +75,21 @@ const CreateUserPage = () => {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={lightTheme}>
       <CssBaseline />
       <Container component="main" maxWidth="xs">
-        <Paper elevation={3} sx={{ padding: 3, mt: 8 }}>
-          <Typography component="h1" variant="h5" align="center">
+        <Paper elevation={3} sx={{ 
+          marginTop: 8, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          padding: 4,
+          borderRadius: 2
+        }}>
+          <Avatar sx={{ m: 1, bgcolor: 'black' }}>
+            <LockOutlinedIcon sx={{ color: 'white' }} />
+          </Avatar>
+          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
             Sign Up
           </Typography>
           <Box component="form" onSubmit={handleCreateUser} sx={{ mt: 1 }}>
@@ -118,7 +124,7 @@ const CreateUserPage = () => {
               label="Password"
               type="password"
               id="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -134,7 +140,7 @@ const CreateUserPage = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             {error && (
-              <Typography color="error" variant="body2">
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                 {error}
               </Typography>
             )}
@@ -142,11 +148,24 @@ const CreateUserPage = () => {
               type="submit"
               fullWidth
               variant="contained"
-              color="primary"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ 
+                mt: 3, 
+                mb: 2, 
+                bgcolor: 'black', 
+                color: 'white',
+                borderRadius: '8px',
+                '&:hover': {
+                  bgcolor: '#333'
+                }
+              }}
             >
               Create Account
             </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link href="/login" variant="body2">
+                Already have an account? Sign in
+              </Link>
+            </Box>
           </Box>
         </Paper>
       </Container>

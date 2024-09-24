@@ -1,6 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './UploadPage.css';
+import {
+  Box,
+  Button,
+  Typography,
+  Container,
+  Paper,
+  Input,
+  IconButton,
+  Snackbar,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import HomeIcon from '@mui/icons-material/Home';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -9,7 +33,7 @@ const UploadPage = () => {
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
-    setErrorMessage(''); // Clear any previous error message when a new file is selected
+    setErrorMessage('');
   };
 
   const handleUpload = async () => {
@@ -43,17 +67,66 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="upload-page">
-      <button onClick={() => navigate('/')} className="home-button-up">
-        <div className="home-icon-circle-up">
-          <i className="fa fa-home home-icon-up"></i>
-        </div>
-      </button>
-      <h1 className="title">Upload CSV</h1>
-      {errorMessage && <div className="error-message">{errorMessage}</div>}
-      <input type="file" onChange={handleFileChange} className="file-input" />
-      <button onClick={handleUpload} className="upload-button">Upload</button>
-    </div>
+    <Container maxWidth="sm">
+      <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
+        <IconButton onClick={() => navigate('/')} color="primary">
+          <HomeIcon />
+        </IconButton>
+      </Box>
+      <Paper elevation={3} sx={{ mt: 8, p: 4, textAlign: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Upload CSV
+        </Typography>
+        <Box sx={{ mt: 4, mb: 4 }}>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+            sx={{ 
+              bgcolor: 'black', 
+              color: 'white',
+              borderRadius: '8px',
+              '&:hover': {
+                bgcolor: '#333'
+              }
+            }}
+          >
+            Select File
+            <VisuallyHiddenInput type="file" onChange={handleFileChange} />
+          </Button>
+          {file && (
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              Selected file: {file.name}
+            </Typography>
+          )}
+        </Box>
+        <Button
+          variant="contained"
+          onClick={handleUpload}
+          disabled={!file}
+          sx={{ 
+            bgcolor: 'black', 
+            color: 'white',
+            borderRadius: '8px',
+            '&:hover': {
+              bgcolor: '#333'
+            },
+            '&:disabled': {
+              bgcolor: '#ccc',
+              color: '#666'
+            }
+          }}
+        >
+          Upload
+        </Button>
+      </Paper>
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={6000}
+        onClose={() => setErrorMessage('')}
+        message={errorMessage}
+      />
+    </Container>
   );
 };
 
